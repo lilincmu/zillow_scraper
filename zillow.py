@@ -6,6 +6,7 @@ import requests
 import unicodecsv as csv
 import argparse
 import browsercookie
+import pyperclip
 
 def generate_map_from_list(text_list):
 	text_map = {}
@@ -39,18 +40,28 @@ response = requests.get(args.url,headers=headers,cookies=cj)
 document = html.fromstring(response.text)
 
 # summary section
-summary = document.xpath("//div[@class='ds-summary-row']")[0]
-price = summary.xpath(".//span[@class='ds-value']//text()")[0]
+summary = document.xpath("//div[@class='ds-home-details-chip']")[0]
+price = ''.join(summary.xpath(".//span[@class='ds-value']//text()"))
+if not price:
+	price = ''.join(summary.xpath(".//span[contains(@class, 'ds-status-details')]//text()")[0:3])
+
 area = summary.xpath(".//span[@class='ds-bed-bath-living-area']//text()")[6]
-# print(price, area)
+bds = summary.xpath(".//span[@class='ds-bed-bath-living-area']//text()")[0]
+bas = summary.xpath(".//span[@class='ds-bed-bath-living-area']//text()")[3]
+
+address_list = document.xpath("//h1[@class='ds-address-container']//span//text()")[0:3];
+address = ''.join(address_list)
+city_state_zip = address_list[2]
+city = city_state_zip[:city_state_zip.find(',')]
+zipcode = city_state_zip[city_state_zip.find(',')+5:]
 
 # facts and feature section
 facts_and_features = document.xpath("//div[contains(@class, 'ds-home-facts-and-features')]")[0]
 facts_list = facts_and_features.xpath("./div/div[1]//text()")
-# print(generate_map_from_list(facts_list))
+facts_map = generate_map_from_list(facts_list)
 
-details_section = facts_and_features.xpath("./div/div[2]//text()")
-# print(generate_map_from_list(details_section))
+details_list = facts_and_features.xpath("./div/div[2]//text()")
+details_map = generate_map_from_list(details_list)
 
 # school score section
 school_list = document.xpath("//ul[@class='ds-nearby-schools-list']")[0]
@@ -62,5 +73,31 @@ for i in [1, 2, 3]:
 		'score': school_list.xpath(school_score_format.format(num=i))[0],
 		'name': school_list.xpath(school_name_format.format(num=i))[0],
 	})
-# print(schools)
 
+# output
+na = 'n/a'
+output_params = {
+	'url': args.url,
+	'address': address,
+	'city': city,
+	'zipcode': zipcode,
+	'price': price,
+	'hoa': facts_map.get('HOA', na),
+	'area': area,
+	'bedrooms': bds,
+	'bathrooms': bas,
+	'year_built': facts_map.get('Year built', na),
+	'elementary_school': schools[0]['score'],
+	'middle_school': schools[1]['score'],
+	'high_school': schools[2]['score'],
+	'parking': facts_map.get('Parking', na),
+	'tax': details_map.get('Annual tax amount', na),
+	'lot': facts_map.get('Lot', na),
+	'facts_map': facts_map,
+	'details_map': details_map,
+	'schools': schools,
+}
+output_format = '\t'.join(map(lambda x: "{{{param}}}".format(param=x), [*output_params]))
+output_text = output_format.format(**output_params)
+print(output_text)
+pyperclip.copy(output_text)
