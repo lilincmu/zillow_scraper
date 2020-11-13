@@ -41,7 +41,7 @@ document = html.fromstring(response.text)
 
 # summary section
 summary = document.xpath("//div[@class='ds-home-details-chip']")[0]
-price = ''.join(summary.xpath(".//span[@class='ds-value']//text()"))
+price = ''.join(summary.xpath(".//div[@class='ds-summary-row']//span//text()")[0])
 if not price:
 	price = ''.join(summary.xpath(".//span[contains(@class, 'ds-status-details')]//text()")[0:3])
 
@@ -49,7 +49,7 @@ area = summary.xpath(".//span[@class='ds-bed-bath-living-area']//text()")[6]
 bds = summary.xpath(".//span[@class='ds-bed-bath-living-area']//text()")[0]
 bas = summary.xpath(".//span[@class='ds-bed-bath-living-area']//text()")[3]
 
-address_list = document.xpath("//h1[@class='ds-address-container']//span//text()")[0:3];
+address_list = summary.xpath("//div[@class='ds-price-change-address-row']//h1//span//text()")[0:3];
 address = ''.join(address_list)
 city_state_zip = address_list[2]
 city = city_state_zip[:city_state_zip.find(',')]
