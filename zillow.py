@@ -41,6 +41,7 @@ def generate_map_from_list(text_list):
 	return text_map
 
 def get_listing_output(url):
+	print(url)
 	document = get_html(url)
 
 	# summary section
@@ -69,6 +70,10 @@ def get_listing_output(url):
 
 	# school score section
 	school_list = document.xpath("//ul[@class='ds-nearby-schools-list']")[0]
+	if len(school_list.xpath(".//li")) < 3:
+		print("school score incomplete. skip")
+		return
+
 	school_score_format = './li[{num}]//span[1]//text()'
 	school_name_format = './li[{num}]//a//text()'
 	schools = []
@@ -80,7 +85,7 @@ def get_listing_output(url):
 
 	# filter listing by certain criteria
 	if (int(re.sub(r'\D', '', price)) > 800000 or int(schools[0].get('score')) < 7):
-		print("skip")
+		print("criteria not met. skip")
 		return
 
 	# output
