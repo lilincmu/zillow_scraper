@@ -80,6 +80,7 @@ def get_listing_output(url):
 
 	# filter listing by certain criteria
 	if (int(re.sub(r'\D', '', price)) > 800000 or int(schools[0].get('score')) < 7):
+		print("skip")
 		return
 
 	# output
@@ -128,11 +129,13 @@ args = argparser.parse_args()
 
 if args.url:
 	output_text = get_listing_output(args.url)
-	print(output_text)
-	pyperclip.copy(output_text)
+	if output_text:
+		print(output_text)
+		pyperclip.copy(output_text)
 
 else:
 	listing_urls = get_listing_urls()
+	print(listing_urls)
 	
 	f = open("results.txt", "a")
 	for listing_url in listing_urls:
