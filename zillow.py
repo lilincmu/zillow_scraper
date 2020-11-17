@@ -46,7 +46,7 @@ def get_listing_output(url):
 
 	# summary section
 	summary = document.xpath("//div[@class='ds-home-details-chip']")[0]
-	price = ''.join(summary.xpath(".//div[@class='ds-summary-row']//span//text()")[0])
+	price = ''.join(summary.xpath(".//div[@class='ds-summary-row']//span//text()")[:1])
 	if not price:
 		price = ''.join(summary.xpath(".//span[contains(@class, 'ds-status-details')]//text()")[0:3])
 
