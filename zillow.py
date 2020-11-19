@@ -9,6 +9,7 @@ import browsercookie
 import pyperclip
 import time
 import re
+import webbrowser
 
 cj = browsercookie.chrome()
 
@@ -43,6 +44,9 @@ def generate_map_from_list(text_list):
 def get_listing_output(url):
 	print(url)
 	document = get_html(url)
+	if url.find('www.zillow.com/community') >= 0:
+		print("community listing not supported. skip")
+		return
 
 	# summary section
 	summary = document.xpath("//div[@class='ds-home-details-chip']")[0]
@@ -116,12 +120,14 @@ def get_listing_output(url):
 	return output_text
 
 def get_listing_urls():
-	search_urls = []
-	f = open("search_urls.txt", "r")
-	search_urls.append(f.readline())
+	with open("search_urls.txt", "r") as f:
+		search_urls = f.readlines()
 
 	listing_urls = []
 	for search_url in search_urls:
+		print(search_url)
+		webbrowser.open_new_tab(search_url)
+		time.sleep(5)
 		document = get_html(search_url)
 		listings = document.xpath("//div[@class='list-card-info']//a")
 		listing_urls.extend([listing.get("href") for listing in listings])
