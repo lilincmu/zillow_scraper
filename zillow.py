@@ -58,7 +58,7 @@ def get_listing_output(url):
 	bds = summary.xpath(".//span[@class='ds-bed-bath-living-area']//text()")[0]
 	bas = summary.xpath(".//span[@class='ds-bed-bath-living-area']//text()")[3]
 
-	address_list = summary.xpath("//div[@class='ds-price-change-address-row']//h1//span//text()")[0:3];
+	address_list = summary.xpath("//div[contains(@class, 'ds-price-change-address-row')]//h1//span//text()")[0:3];
 	address = ''.join(address_list)
 	city_state_zip = address_list[2]
 	city = city_state_zip[:city_state_zip.find(',')]
@@ -73,7 +73,7 @@ def get_listing_output(url):
 	details_map = generate_map_from_list(details_list)
 
 	# school score section
-	school_list = document.xpath("//ul[@class='ds-nearby-schools-list']")[0]
+	school_list = document.xpath("//div[@class='ds-expandable-card-section-flush-padding']//ul")[0]
 	if len(school_list.xpath(".//li")) < 3:
 		print("school score incomplete. skip")
 		return
@@ -146,6 +146,8 @@ if args.url:
 
 else:
 	listing_urls = get_listing_urls()
+	if len(listing_urls) == 0:
+		exit(1)
 	print(listing_urls)
 	
 	f = open("results.txt", "a")
