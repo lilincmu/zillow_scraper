@@ -136,6 +136,7 @@ def get_listing_urls():
 
 argparser = argparse.ArgumentParser(formatter_class=argparse.RawTextHelpFormatter)
 argparser.add_argument('url', nargs='?')
+argparser.add_argument('--listings', nargs='?')
 args = argparser.parse_args()
 
 if args.url:
@@ -145,7 +146,13 @@ if args.url:
 		pyperclip.copy(output_text)
 
 else:
-	listing_urls = get_listing_urls()
+	if args.listings:
+		with open(args.listings, "r") as f:
+			listing_urls = set(f.read().splitlines())
+	else:
+		listing_urls = get_listing_urls()
+		if len(listing_urls) == 0:
+			exit(1)
 	if len(listing_urls) == 0:
 		exit(1)
 	print(listing_urls)
