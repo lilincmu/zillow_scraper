@@ -151,8 +151,6 @@ else:
 			listing_urls = set(f.read().splitlines())
 	else:
 		listing_urls = get_listing_urls()
-		if len(listing_urls) == 0:
-			exit(1)
 	if len(listing_urls) == 0:
 		exit(1)
 	print(listing_urls)
