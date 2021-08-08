@@ -12,6 +12,7 @@ import re
 import webbrowser
 
 cj = browsercookie.chrome()
+CITIES_TOO_FAR = ['Chimacum', 'Bremerton', 'Mukilteo', 'Poulsbo', 'Sultan']
 
 def get_html(url):
 	headers= {
@@ -50,19 +51,23 @@ def get_listing_output(url):
 
 	# summary section
 	summary = document.xpath("//div[@class='ds-home-details-chip']")[0]
-	price = ''.join(summary.xpath(".//div[@class='ds-summary-row']//span//text()")[:1])
+	price = ''.join(summary.xpath(".//div[contains(@class, 'ds-summary-row')]//span//span//text()")[:1])
 	if not price:
 		price = ''.join(summary.xpath(".//span[contains(@class, 'ds-status-details')]//text()")[0:3])
 
-	area = summary.xpath(".//span[@class='ds-bed-bath-living-area']//text()")[6]
-	bds = summary.xpath(".//span[@class='ds-bed-bath-living-area']//text()")[0]
-	bas = summary.xpath(".//span[@class='ds-bed-bath-living-area']//text()")[3]
+	area = summary.xpath(".//span[@class='ds-bed-bath-living-area-container']//text()")[6]
+	bds = summary.xpath(".//span[@class='ds-bed-bath-living-area-container']//text()")[0]
+	bas = summary.xpath(".//span[@class='ds-bed-bath-living-area-container']//text()")[3]
 
 	address_list = summary.xpath("//div[contains(@class, 'ds-price-change-address-row')]//h1//span//text()")[0:3];
 	address = ''.join(address_list)
 	city_state_zip = address_list[2]
 	city = city_state_zip[:city_state_zip.find(',')]
 	zipcode = city_state_zip[city_state_zip.find(',')+5:]
+
+	if city in CITIES_TOO_FAR:
+		print("city too far. skip")
+		return
 
 	# facts and feature section
 	facts_and_features = document.xpath("//div[contains(@class, 'ds-home-facts-and-features')]")[0]
@@ -88,7 +93,7 @@ def get_listing_output(url):
 		})
 
 	# filter listing by certain criteria
-	if (int(re.sub(r'\D', '', price)) > 800000 or int(schools[0].get('score')) < 7):
+	if (int(re.sub(r'\D', '', price)) > 1000000 or int(schools[0].get('score')) < 7):
 		print("criteria not met. skip")
 		return
 
@@ -151,9 +156,10 @@ else:
 			listing_urls = set(f.read().splitlines())
 	else:
 		listing_urls = get_listing_urls()
-	if len(listing_urls) == 0:
-		exit(1)
 	print(listing_urls)
+	if len(listing_urls) == 0:
+		print("No listing url found")
+		exit(1)
 	
 	f = open("results.txt", "a")
 	for listing_url in listing_urls:
